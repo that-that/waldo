@@ -4,7 +4,7 @@ import * as fs from 'fs';
 import * as fse from 'fs-extra';
 import { spawn } from 'child_process';
 
-import { prisma } from "./database";
+// import { prisma } from './database';
 
 function getDirectories(source: string) {
   return fs

@@ -43,11 +43,18 @@ export const createFootage = defaultEndpointsFactory.build({
     }
 
     const details = await ytdl.getInfo(url);
-    const defaultFormat = details.formats.find(format => format.itag === 299) ?? details.formats.find(format => format.itag === 298);
-    const lowFormat = details.formats.find(format => format.itag === 136) ? 136 : undefined;
+    const defaultFormat =
+      details.formats.find(format => format.itag === 299) ??
+      details.formats.find(format => format.itag === 298);
+    const lowFormat = details.formats.find(format => format.itag === 136)
+      ? 136
+      : undefined;
 
     if (!defaultFormat && !lowFormat) {
-      throw createHttpError(400, `URL ${url} does not provide an acceptable video format.`);
+      throw createHttpError(
+        400,
+        `URL ${url} does not provide an acceptable video format.`,
+      );
     }
 
     const footageId = cuid();

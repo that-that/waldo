@@ -27,9 +27,9 @@ export const isInGuild = defaultEndpointsFactory.build({
     const query = await prisma.account.findUnique({
       where: {
         provider_providerAccountId: {
-          provider: "discord",
-          providerAccountId: discordId
-        }
+          provider: 'discord',
+          providerAccountId: discordId,
+        },
       },
     });
     const access_token = query?.access_token;

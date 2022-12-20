@@ -3,7 +3,7 @@
   "pipeline": {
     "build": {
       "dependsOn": ["^db:generate", "^^build"],
-      "env": ["PORT", "HOST", "DB_URL"],
+      "env": ["PORT", "HOST", "DB_URL", "FS_LOCATION", "WALDO_DISCORD_ID"],
       "outputs": ["dist/**", ".next/**", "out/**"]
     },
     "dev": {

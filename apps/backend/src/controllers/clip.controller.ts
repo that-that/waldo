@@ -1,16 +1,12 @@
-import { Request, Response } from 'express';
 import { v4 as uuidv4, validate } from 'uuid';
 import {
   Clip,
-  ClipInput,
-  ClipDocument,
-  ClipZod,
   ClipZodSchema,
-  ClipRetrieveZod,
   ClipRetrieveSchema,
 } from '../models/clip.interface';
 import { defaultEndpointsFactory, z, createHttpError } from 'express-zod-api';
 import { fileStreamingEndpointsFactory } from '../factories/fileStreamingEndpointsFactory';
+
 /**
  * POST /clip/:footage
  * @summary Endpoint to create new clip based on provided Footage UUID.

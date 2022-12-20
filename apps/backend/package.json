@@ -4,10 +4,11 @@
   "description": "Back end application to process videos based on YouTube URL for AI/ML model usage.",
   "scripts": {
     "db": "docker compose up",
-    "dev": "ts-node-dev --respawn --pretty --transpile-only src/index.ts",
-    "start": "ts-node dist/index.js",
+    "dev": "cross-env NODE_ENV=dev ts-node-dev --respawn --pretty --transpile-only src/index.ts",
+    "start": "cross-env NODE_ENV=production ts-node dist/index.js",
     "build": "tsc",
-    "lint": "eslint src/**/*.{ts,tsx}"
+    "lint": "eslint src/**/*.{ts,tsx}",
+    "lint:fix": "eslint src/**/*.{ts,tsx} --fix"
   },
   "keywords": [],
   "dependencies": {
