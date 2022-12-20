@@ -8,29 +8,35 @@ type FootageDocument = Document & {
   uuid: string;
   discordId: number;
   youtubeUrl: string;
+  videoFormat: number;
   footageType: string;
   upVotes: number;
   downVotes: number;
   isAnalyzed: boolean;
+  isParsed: boolean;
 };
 
 const FootageZodSchema = z.object({
   id: z.string().cuid(),
   userId: z.string(),
   youtubeUrl: z.string().url(),
+  videoFormat: z.number(),
   footageType: z.string(),
   upVotes: z.number().optional(),
   downVotes: z.number().optional(),
   isAnalyzed: z.boolean(),
+  isParsed: z.boolean(),
 });
 
 const FootageUpdateInputSchema = z.object({
   id: z.string().cuid(),
   footageType: FootageTypeEnum,
   isAnalyzed: z.boolean(),
+  isParsed: z.boolean(),
 });
 
 type FootageUpdateInput = z.infer<typeof FootageUpdateInputSchema>;
+
 const footageSchema = new Schema(
   {
     uuid: {
@@ -45,6 +51,11 @@ const footageSchema = new Schema(
     youtubeUrl: {
       type: Schema.Types.String,
       required: true,
+      unique: true,
+    },
+    videoFormat: {
+      type: Schema.Types.Number,
+      required: true,
     },
     footageType: {
       type: Schema.Types.String,
@@ -52,6 +63,11 @@ const footageSchema = new Schema(
       default: 'csgo',
     },
     isAnalyzed: {
+      type: Schema.Types.Boolean,
+      required: true,
+      default: false,
+    },
+    isParsed: {
       type: Schema.Types.Boolean,
       required: true,
       default: false,

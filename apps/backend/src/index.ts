@@ -17,6 +17,9 @@ export const zodConfig = createConfig({
     level: 'debug',
     color: true,
   },
+  inputSources: {
+    post: ['body'],
+  },
 });
 
 const APIRouter: Routing = {

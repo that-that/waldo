@@ -1,12 +1,15 @@
 import ytdl from 'ytdl-core';
+import cuid from 'cuid';
 import * as fs from 'fs';
+
 import {
-  FootageZodSchema,
-  FootageUpdateInputSchema,
   FootageTypeEnum,
+  FootageUpdateInputSchema,
+  FootageZodSchema,
 } from '../models/footage.interface';
 import { createHttpError, defaultEndpointsFactory, z } from 'express-zod-api';
 import { prisma } from '../services/database';
+import { parseClips } from '../services/clips';
 
 /**
  * POST /footage
@@ -39,42 +42,31 @@ export const createFootage = defaultEndpointsFactory.build({
       throw createHttpError(400, `URL ${url} has already been submitted.`);
     }
 
-    try {
-      const data = await prisma.footage.create({
-        data: {
-          userId: id,
-          youtubeUrl: url,
-          footageType: type,
-        },
-      });
+    const details = await ytdl.getInfo(url);
+    const defaultFormat = details.formats.find(format => format.itag === 299) ?? details.formats.find(format => format.itag === 298);
+    const lowFormat = details.formats.find(format => format.itag === 136) ? 136 : undefined;
 
-      // Validate that the URL contains a video that can be downloaded.
-      await ytdl.getInfo(url);
-      // Download video and save as a local MP4 to be used for processing.
-      await ytdl(url).pipe(fs.createWriteStream(`${data.id}.mp4`));
-
-      // TODO: Implement functionality to trigger python kill shot parsing script.
-      // https://www.tutorialspoint.com/run-python-script-from-node-js-using-child-process-spawn-method
-      // https://github.com/waldo-vision/aimbot-detection-prototype/blob/main/auto_clip.py
-      // If we get resulting clips, then isCsgoFootage should be true.
-
-      // TODO: Implement functionality to trigger logic to shrink video capture width & height.
-      // It would be best to do this logic directly within Python script when saving the clip files.
-      // Otherwise cropping could be achieved by using FFMPEG or something along those lines.
-
-      // TODO: Submit clips with unique IDs and association to footage ID (API to set DB & FS to create clip file).
-      // Each clip should be submitted to the database as a ClipInput.
-      // Each clip should be stored to a location on the local server where it can be obtained by the Analysis team.
-
-      return data;
-    } catch (error) {
-      if (error instanceof Error) {
-        // probably don't want to do this in prod
-        throw createHttpError(406, error.message);
-      }
-
-      throw createHttpError(500, 'Something went wrong processing the video.');
+    if (!defaultFormat && !lowFormat) {
+      throw createHttpError(400, `URL ${url} does not provide an acceptable video format.`);
     }
+
+    const footageId = cuid();
+
+    // TODO: Update to download specific format from footage details.
+    // Download video and save as a local MP4 to be used for processing.
+    await ytdl(url).pipe(fs.createWriteStream(`${footageId}.mp4`));
+
+    // TODO: Create functionality to queue parsing and return clips.
+    parseClips(footageId, `${footageId}.mp4`);
+
+    return await prisma.footage.create({
+      data: {
+        userId: id,
+        youtubeUrl: url,
+        videoFormat: defaultFormat ? defaultFormat.itag : lowFormat,
+        footageType: type,
+      },
+    });
   },
 });
 
