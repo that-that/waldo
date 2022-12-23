@@ -34,11 +34,12 @@ model Footage {
   userId       String
   footageVotes FootageVotes[] @relation("footage")
   youtubeUrl   String         @unique
+  videoFormat  Int            @default(0)
   footageType  FootageType    @default(CSG)
   upVotes      Int            @default(0)
   downVotes    Int            @default(0)
   isAnalyzed   Boolean        @default(false)
-  clips        Clip[]
+  clips        Clip[]         @relation("footage")
 }
 
 model FootageVotes {
@@ -53,8 +54,9 @@ model FootageVotes {
 
 model Clip {
   id        String  @id @default(cuid())
-  footage   Footage @relation(fields: [footageId], references: [id])
+  footage   Footage @relation("footage", fields: [footageId], references: [id], onDelete: Cascade)
   footageId String
+  uuid      String  @unique
 }
 
 enum FootageType {

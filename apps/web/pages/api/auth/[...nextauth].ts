@@ -29,27 +29,6 @@ export const authOptions = {
       clientSecret: process.env.DISCORD_CLIENT_SECRET,
       authorization: { params: { scope: 'identify email guilds' } },
     }),
-    GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    }),
-    GitHubProvider({
-      clientId: process.env.GITHUB_CLIENT_ID,
-      clientSecret: process.env.GITHUB_CLIENT_SECRET,
-    }),
-    BattleNetProvider({
-      clientId: process.env.BTLNET_CLIENT_ID,
-      clientSecret: process.env.BTLNET_CLIENT_SECRET,
-      issuer: 'https://us.battle.net/oauth',
-    }),
-    FaceBookProvider({
-      clientId: process.env.FB_CLIENT_ID,
-      clientSecret: process.env.FB_CLIENT_SECRET,
-    }),
-    TwitchProvider({
-      clientId: process.env.TWITCH_CLIENT_ID,
-      clientSecret: process.env.TWITCH_CLIENT_SECRET,
-    }),
   ],
   callbacks: {
     async session(sessionCallback: SessionCallback) {

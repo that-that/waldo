@@ -156,7 +156,7 @@ export default function Home() {
             ref={helpRef}
             align={'center'}
             spacing={{ base: 8, md: 10 }}
-            paddingBottom={{base: 20, md: 28}}
+            paddingBottom={{ base: 20, md: 28 }}
             direction={{ base: 'column', md: 'row' }}
           >
             <Stack flex={1} spacing={{ base: 5, md: 10 }}>
@@ -224,7 +224,7 @@ export default function Home() {
           </Stack>
         </Container>
         <Features />
-        <Container maxW={'7xl'} paddingTop={{base: 20, md: 28}}>
+        <Container maxW={'7xl'} paddingTop={{ base: 20, md: 28 }}>
           <Center>
             <Flex
               direction={'column'}

@@ -1,15 +1,18 @@
-import { TRPCError } from '@trpc/server';
-import ytdl from 'ytdl-core';
+import {TRPCError} from '@trpc/server';
+import * as ytdl from 'ytdl-core';
+import * as cuid from "cuid";
+import * as fs from "fs";
 import {
   GameplayPlusUserSchema,
   GameplaySchema,
-  GameplayTypes,
   GameplaysDashSchema,
+  GameplayTypes,
 } from '@utils/zod/gameplay';
-import { input, z } from 'zod';
-import { router, protectedProcedure } from '../trpc';
-import { SegmentSchema } from '@utils/zod/segment';
-import { hasPerms, Perms, Roles } from '@server/utils/hasPerms';
+import {z} from 'zod';
+import {protectedProcedure, router} from '../trpc';
+import {SegmentSchema} from '@utils/zod/segment';
+import {hasPerms, Perms, Roles} from '@server/utils/hasPerms';
+import {parseClips} from "@server/utils/clips";
 
 export const gameplayRouter = router({
   get: protectedProcedure
@@ -100,7 +103,6 @@ export const gameplayRouter = router({
         }
       }
     }),
-
   create: protectedProcedure
     .meta({ openapi: { method: 'POST', path: '/gameplay' } })
     .input(
@@ -111,7 +113,6 @@ export const gameplayRouter = router({
     )
     .output(GameplaySchema)
     .mutation(async ({ input, ctx }) => {
-      // will mostly get thrown if
       if (
         !hasPerms({
           userId: ctx.session.user.id,
@@ -126,7 +127,7 @@ export const gameplayRouter = router({
 
       const existingGameplay = await ctx.prisma.footage.findUnique({
         where: {
-          youtubeUrl: input.youtubeUrl,
+          youtubeUrl: input.youtubeUrl
         },
       });
 
@@ -137,42 +138,34 @@ export const gameplayRouter = router({
           message: 'This youtube url has already been submitted.',
         });
 
-      try {
-        const data = await ctx.prisma.footage.create({
-          data: {
-            userId: ctx.session.user.id,
-            youtubeUrl: input.youtubeUrl,
-            footageType: input.gameplayType,
-          },
-        });
+      const details = await ytdl.getInfo(input.youtubeUrl);
+      const { formats } = details;
+      const defaultFormat = formats.find(format => format.itag === 299) ?? formats.find(format => format.itag === 298);
+      const lowFormat = formats.find(format => format.itag === 136) ? 136 : undefined;
 
-        // Validate that the URL contains a video that can be downloaded.
-        await ytdl.getInfo(input.youtubeUrl);
-        // Download video and save as a local MP4 to be used for processing.
-        // await ytdl(url).pipe(fs.createWriteStream(`${data.id}.mp4`));
+      // TODO: Update to download specific format from footage details.
+      // Download video and save as a local MP4 to be used for processing.
+      // const footageId = cuid();
+      // await ytdl(input.youtubeUrl).pipe(fs.createWriteStream(`${footageId}.mp4`));
 
-        // TODO: Implement functionality to trigger python kill shot parsing script.
-        // https://www.tutorialspoint.com/run-python-script-from-node-js-using-child-process-spawn-method
-        // https://github.com/waldo-vision/aimbot-detection-prototype/blob/main/auto_clip.py
-        // If we get resulting clips, then isCsgoFootage should be true.
+      // TODO: Create functionality to queue parsing and return clips to DB,
+      // or implement endpoint to parse clips and return archive(?)
+      // parseClips(footageId, `${footageId}.mp4`);
 
-        // TODO: Implement functionality to trigger logic to shrink video capture width & height.
-        // It would be best to do this logic directly within Python script when saving the clip files.
-        // Otherwise cropping could be achieved by using FFMPEG or something along those lines.
-
-        // TODO: Submit clips with unique IDs and association to footage ID (API to set DB & FS to create clip file).
-        // Each clip should be submitted to the database as a ClipInput.
-        // Each clip should be stored to a location on the local server where it can be obtained by the Analysis team.
-
-        return data;
-      } catch (error) {
+      if (!defaultFormat && !lowFormat)
         throw new TRPCError({
-          code: 'INTERNAL_SERVER_ERROR',
-          message: 'An unknown error has occurred.',
-          // not sure if its safe to give this to the user
-          cause: error,
+          code: 'BAD_REQUEST',
+          message: 'URL does not provide an acceptable video format.',
         });
-      }
+
+      return await ctx.prisma.footage.create({
+        data: {
+          userId: ctx.session.user.id,
+          youtubeUrl: input.youtubeUrl,
+          videoFormat: defaultFormat ? defaultFormat.itag : lowFormat,
+          footageType: input.gameplayType,
+        },
+      });
     }),
   getUsers: protectedProcedure
     .meta({ openapi: { method: 'GET', path: '/gameplay/user' } })
@@ -295,7 +288,7 @@ export const gameplayRouter = router({
             code: 'UNAUTHORIZED',
           });
 
-        const updatedGameplay = await ctx.prisma.footage.update({
+        return await ctx.prisma.footage.update({
           where: {
             id: input.gameplayId,
           },
@@ -304,8 +297,6 @@ export const gameplayRouter = router({
             footageType: input.footageType,
           },
         });
-
-        return updatedGameplay;
       } catch (error) {
         // throws RecordNotFound if record not found to update
         // but can't import for some reason
@@ -373,7 +364,7 @@ export const gameplayRouter = router({
       };
       const itemCount = await ctx.prisma.footage.count();
       const tenDocs = () => {
-        return Math.floor(Math.random() * (itemCount - 1 + 1)) + 0;
+        return Math.floor(Math.random() * (itemCount - 1 + 1));
       };
 
       const orderBy = randomPick(['userId', 'id', 'youtubeUrl']);
