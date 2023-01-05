@@ -14,7 +14,7 @@ export default function Review() {
   const nullCode = '--+|[]';
   // UPLOAD VARS AND LOGIC
   const { isLoading: reviewPageQLoading, data: reviewPageQData } =
-    trpc.site.getPageData.useQuery({ pageName: 'review' }, { enabled: true });
+    trpc.site.getPageData.useQuery({ name: 'review' }, { enabled: true });
   const utils = trpc.useContext();
   const [customReason, setCustomReason] = useState<string>(nullCode);
   const updatePage = trpc.site.updatePage.useMutation({
@@ -25,27 +25,32 @@ export default function Review() {
 
   const handleApply = (change: number) => {
     if (!reviewPageQData) return;
-
+    // change "0" changes the review page's maintenance value to on or off depending on the current value
     if (change == 0) {
       updatePage.mutateAsync({
-        pageName: 'review',
-        isDisabled: !reviewPageQData.disabled,
-        isCustomReason: reviewPageQData.isCustomReason,
-        customReason: reviewPageQData.customReason,
+        name: 'review',
+        maintenance: !reviewPageQData.maintenance,
+        isCustomAlert: reviewPageQData.isCustomAlert,
+        alertTitle: reviewPageQData.alertTitle,
+        alertDescription: reviewPageQData.alertDescription,
       });
+      // change "1" changes the review page's isCustomAlert value to toggled or not toggled depending on the current value
     } else if (change == 1) {
       updatePage.mutateAsync({
-        pageName: 'review',
-        isDisabled: reviewPageQData.disabled,
-        isCustomReason: !reviewPageQData.isCustomReason,
-        customReason: reviewPageQData.customReason,
+        name: 'review',
+        maintenance: reviewPageQData.maintenance,
+        isCustomAlert: !reviewPageQData.isCustomAlert,
+        alertTitle: reviewPageQData.alertTitle,
+        alertDescription: reviewPageQData.alertDescription,
       });
+      // change "2" sets the review page's custom maintenance reason (alertTitle) to a certain string value
     } else if (change == 2) {
       updatePage.mutateAsync({
-        pageName: 'review',
-        isDisabled: reviewPageQData.disabled,
-        isCustomReason: reviewPageQData.isCustomReason,
-        customReason: customReason,
+        name: 'review',
+        maintenance: reviewPageQData.maintenance,
+        isCustomAlert: reviewPageQData.isCustomAlert,
+        alertTitle: customReason,
+        alertDescription: reviewPageQData.alertDescription,
       });
     }
   };
@@ -54,20 +59,21 @@ export default function Review() {
     if (!reviewPageQData) return;
 
     updatePage.mutateAsync({
-      pageName: 'review',
-      isDisabled: reviewPageQData?.disabled,
-      isCustomReason: reviewPageQData?.isCustomReason,
-      customReason: nullCode,
+      name: 'review',
+      maintenance: reviewPageQData?.maintenance,
+      isCustomAlert: reviewPageQData?.isCustomAlert,
+      alertTitle: nullCode,
+      alertDescription: reviewPageQData.alertDescription,
     });
   };
   return (
     <Flex direction={'column'} gap={5} mb={5}>
       {reviewPageQLoading ? (
-        <Text>dfsdfsdf</Text>
+        <Text>Loading...</Text>
       ) : (
         <>
           <Flex direction={'column'}>
-            <Text>Configure Service</Text>
+            <Text>Gameplay Reviewing</Text>
             <Text fontSize={'medium'} fontWeight={'medium'}>
               By disabling this service you are preventing users from creating
               voting on gameplay in the database. This includes all users
@@ -85,7 +91,7 @@ export default function Review() {
             </Text>
             <Switch
               size={'md'}
-              defaultChecked={!reviewPageQData?.disabled}
+              defaultChecked={!reviewPageQData?.maintenance}
               onChange={() => handleApply(0)}
             />
           </Flex>
@@ -98,9 +104,9 @@ export default function Review() {
             <Text
               fontWeight={'normal'}
               fontSize={'lg'}
-              opacity={!reviewPageQData?.disabled ? '0.4' : '1'}
+              opacity={!reviewPageQData?.maintenance ? '0.4' : '1'}
               _hover={
-                !reviewPageQData?.disabled ? { cursor: 'not-allowed' } : {}
+                !reviewPageQData?.maintenance ? { cursor: 'not-allowed' } : {}
               }
             >
               Use custom message
@@ -110,11 +116,11 @@ export default function Review() {
               onChange={() => {
                 handleApply(1);
               }}
-              defaultChecked={reviewPageQData?.isCustomReason}
-              disabled={!reviewPageQData?.disabled}
+              defaultChecked={reviewPageQData?.isCustomAlert}
+              disabled={!reviewPageQData?.maintenance}
             />
           </Flex>
-          <Collapse in={reviewPageQData?.isCustomReason} animateOpacity>
+          <Collapse in={reviewPageQData?.isCustomAlert} animateOpacity>
             <InputGroup size="md">
               <Input
                 pr="4.5rem"
@@ -122,19 +128,21 @@ export default function Review() {
                 _focus={{ boxShadow: 'none' }}
                 type={'text'}
                 placeholder={
-                  reviewPageQData?.customReason == nullCode
+                  reviewPageQData?.alertTitle == nullCode
                     ? 'Reviewing footage is under maintenance...'
-                    : reviewPageQData?.customReason
+                    : reviewPageQData?.alertTitle
+                    ? reviewPageQData.alertTitle
+                    : ''
                 }
                 onChange={event => setCustomReason(event.target.value)}
-                disabled={!reviewPageQData?.disabled}
+                disabled={!reviewPageQData?.maintenance}
               />
               <InputRightElement width="4.5rem">
-                {reviewPageQData?.customReason == nullCode ? (
+                {reviewPageQData?.alertTitle == nullCode ? (
                   <Button
                     h="1.75rem"
                     size="sm"
-                    disabled={!reviewPageQData?.disabled}
+                    disabled={!reviewPageQData?.maintenance}
                     onClick={() => handleApply(2)}
                   >
                     Apply
@@ -143,7 +151,7 @@ export default function Review() {
                   <Button
                     h="1.75rem"
                     size="sm"
-                    disabled={!reviewPageQData?.disabled}
+                    disabled={!reviewPageQData?.maintenance}
                     onClick={() => handleReset()}
                   >
                     Reset

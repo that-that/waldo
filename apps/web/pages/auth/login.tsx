@@ -90,36 +90,30 @@ export default function Login() {
     const providers = [
       {
         provider: 'Discord',
-        docs: 'https://example.com',
+        docs: 'https://discord.com/developers/docs/topics/oauth2',
         hex: '#5865F2',
         selected: false,
       },
       {
         provider: 'Google',
-        docs: 'https://example.com',
+        docs: 'https://developers.google.com/identity/protocols/oauth2',
         selected: false,
       },
       {
         provider: 'Github',
-        docs: 'https://example.com',
+        docs: 'https://docs.github.com/en/developers/apps/building-oauth-apps/authorizing-oauth-apps',
         hex: '#000000',
         selected: false,
       },
       {
         provider: 'BattleNET',
-        docs: 'https://example.com',
+        docs: 'https://develop.battle.net/documentation/guides/using-oauth',
         hex: '#009AE4',
         selected: false,
       },
       {
-        provider: 'FaceBook',
-        docs: 'https://example.com',
-        hex: ' #0165E1',
-        selected: false,
-      },
-      {
         provider: 'Twitch',
-        docs: 'https://example.com',
+        docs: 'https://dev.twitch.tv/docs/authentication/getting-tokens-oauth',
         hex: '#9146FF',
         selected: false,
       },
@@ -131,10 +125,10 @@ export default function Login() {
   return (
     <>
       <Head>
-        <title>Waldo | Login</title>
+        <title>WALDO | Login</title>
         <meta
           name="description"
-          content="Waldo is an Open-source visual cheat detection, powered by A.I"
+          content="WALDO is an Open-source visual cheat detection, powered by A.I"
         />
       </Head>
       <Box maxWidth={'100%'} maxHeight={'100vh'} textAlign={'left'}>
@@ -161,7 +155,7 @@ export default function Login() {
                   >
                     <Image src={WaldoLogo} width={40} height={40} alt="Logo" />
                     <Heading size={'md'} pl={3}>
-                      Waldo
+                      WALDO
                     </Heading>
                   </Flex>
                 </Link>
@@ -199,7 +193,7 @@ export default function Login() {
                   >
                     <Image src={WaldoLogo} width={40} height={40} alt="Logo" />
                     <Heading size={'md'} pl={3}>
-                      Waldo
+                      WALDO
                     </Heading>
                   </Flex>
                 </Link>

@@ -18,7 +18,7 @@ interface Props {
   show: boolean;
 }
 const DeleteAccModal = (props: Props) => {
-  const [showModal, setShowModal] = useState<boolean | null>(true);
+  const [showModal, setShowModal] = useState<boolean | null>(false);
   const [userId, setUserId] = useState<string>();
   const [loading, setLoading] = useState<boolean>(true);
   const utils = trpc.useContext();
@@ -47,7 +47,7 @@ const DeleteAccModal = (props: Props) => {
     <div>
       <Box>
         {loading && props.show ? (
-          <Loading color={'default'} />
+          <Loading color={'purple.500'} />
         ) : (
           <Modal
             isOpen={showModal as boolean}

@@ -34,21 +34,24 @@ const WaldoSite = () => {
   const [alertTitle, setAlertTitle] = useState<string | null>(null);
 
   const handleSwitchChanges = async (change: number) => {
+    // if no data, then return (should never happen)
     if (!data) return;
 
+    // change "0" changes the maintenance value for the site to on or off, depending on the current value
     if (change == 0) {
       await updateSite.mutateAsync({
-        showLpAlert: data.showLpAlert,
-        lpAlertDescription: data.lpAlertDescription,
-        lpAlertTitle: data.lpAlertTitle,
-        isMaintenance: !data.maintenance,
+        isCustomAlert: data.isCustomAlert,
+        alertDescription: data.alertDescription,
+        alertTitle: data.alertTitle,
+        maintenance: !data.maintenance,
       });
+      // change "1" changes the isCustomAlert value to on or off depending on the current value (either shows an alert on the main page or doesn't)
     } else if (change == 1) {
       await updateSite.mutateAsync({
-        showLpAlert: !data.showLpAlert,
-        lpAlertDescription: data.lpAlertDescription,
-        lpAlertTitle: data.lpAlertTitle,
-        isMaintenance: data.maintenance,
+        isCustomAlert: !data.isCustomAlert,
+        alertDescription: data.alertDescription,
+        alertTitle: data.alertTitle,
+        maintenance: data.maintenance,
       });
     }
   };
@@ -70,24 +73,24 @@ const WaldoSite = () => {
     }
     if (alertDescription == null) {
       await updateSite.mutateAsync({
-        showLpAlert: data.showLpAlert,
-        lpAlertDescription: data.lpAlertDescription,
-        lpAlertTitle: alertTitle,
-        isMaintenance: !data.maintenance,
+        isCustomAlert: data.isCustomAlert,
+        alertDescription: data.alertDescription,
+        alertTitle: alertTitle,
+        maintenance: !data.maintenance,
       });
     } else if (alertTitle == null) {
       await updateSite.mutateAsync({
-        showLpAlert: data.showLpAlert,
-        lpAlertDescription: alertDescription,
-        lpAlertTitle: data.lpAlertTitle,
-        isMaintenance: data.maintenance,
+        isCustomAlert: data.isCustomAlert,
+        alertDescription: alertDescription,
+        alertTitle: data.alertTitle,
+        maintenance: data.maintenance,
       });
     } else {
       await updateSite.mutateAsync({
-        showLpAlert: data.showLpAlert,
-        lpAlertDescription: alertDescription,
-        lpAlertTitle: alertTitle,
-        isMaintenance: data.maintenance,
+        isCustomAlert: data.isCustomAlert,
+        alertDescription: alertDescription,
+        alertTitle: alertTitle,
+        maintenance: data.maintenance,
       });
     }
     window.location.reload();
@@ -130,11 +133,11 @@ const WaldoSite = () => {
                   </Text>
                   <Switch
                     size={'md'}
-                    defaultChecked={data?.showLpAlert}
+                    defaultChecked={data?.isCustomAlert}
                     onChange={() => handleSwitchChanges(1)}
                   />
                 </Flex>
-                {data?.showLpAlert && (
+                {data?.isCustomAlert && (
                   <Flex direction={'column'}>
                     <Text fontStyle={'italic'} fontWeight={'thin'} mt={4}>
                       Click on title or description to edit the alert, then
@@ -152,9 +155,9 @@ const WaldoSite = () => {
                           <Input
                             variant={'unstyled'}
                             placeholder={
-                              data?.lpAlertTitle == ''
+                              data?.alertTitle == ''
                                 ? 'Title'
-                                : data?.lpAlertTitle
+                                : (data?.alertTitle as string)
                             }
                             onChange={event =>
                               setAlertTitle(event.target.value)
@@ -169,9 +172,9 @@ const WaldoSite = () => {
                           <Input
                             variant={'unstyled'}
                             placeholder={
-                              data?.lpAlertDescription == ''
+                              data?.alertDescription == ''
                                 ? 'Title'
-                                : data?.lpAlertDescription
+                                : (data?.alertDescription as string)
                             }
                             onChange={event =>
                               setAlertDescription(event.target.value)

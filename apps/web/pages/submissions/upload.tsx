@@ -38,6 +38,8 @@ import { AppRouter } from '@server/trpc/router/_app';
 import { TRPCError } from '@trpc/server';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
+import { prisma } from '@server/db/client';
+
 export default function Upload() {
   const [waitingForResponse, setWaitingForResponse] = useState<boolean>();
   const [loading, setLoading] = useState<boolean>(true);
@@ -60,7 +62,7 @@ export default function Upload() {
   });
 
   const { isLoading, data: isDisabled } = trpc.site.getPageData.useQuery({
-    pageName: 'upload',
+    name: 'upload',
   });
 
   const handleRequestError = async (error: TRPCError | string) => {
@@ -165,7 +167,8 @@ export default function Upload() {
         | 'VAL'
         | 'TF2'
         | 'COD'
-        | 'APE',
+        | 'APE'
+        | 'R6S',
       youtubeUrl: currentUrl as string,
     };
     try {
@@ -179,7 +182,7 @@ export default function Upload() {
 
   useEffect(() => {
     const doPageLoadThings = async () => {
-      if (isDisabled?.disabled) {
+      if (isDisabled?.maintenance) {
         router.push('/');
       }
       const session = await getSession();
@@ -197,7 +200,7 @@ export default function Upload() {
   if (loading) {
     return (
       <Box>
-        <Loading color={'blue.500'} />
+        <Loading color={'purple.500'} />
       </Box>
     );
   } else {
@@ -207,7 +210,7 @@ export default function Upload() {
           <title>Submissions | Upload</title>
           <meta
             name="description"
-            content="Waldo is an Open-source visual cheat detection, powered by A.I"
+            content="WALDO is an Open-source visual cheat detection, powered by A.I"
           />
         </Head>
         <Container
@@ -242,7 +245,7 @@ export default function Upload() {
                     Before you submit a video make sure you have read the rules
                     regarding the submission and reviewing of gameplay. You can
                     read our terms of service{' '}
-                    <Link href={'https://www.example.com'}>
+                    <Link href={'/tos'}>
                       <Text as={'span'} fontWeight={'bold'}>
                         here.
                       </Text>
@@ -431,6 +434,17 @@ export default function Upload() {
     );
   }
 }
+
+export const getServerSideProps = async () => {
+  const config = await prisma.waldoPage.findUnique({
+    where: {
+      name: 'upload',
+    },
+  });
+  if (config && config?.maintenance) {
+    return { redirect: { destination: '/', permanent: false } };
+  } else return { props: {} };
+};
 
 Upload.getLayout = function getLayout(page: ReactElement) {
   return <Layout>{page}</Layout>;
