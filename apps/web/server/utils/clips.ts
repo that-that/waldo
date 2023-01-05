@@ -4,9 +4,9 @@ import * as fs from 'fs';
 import * as fse from 'fs-extra';
 import { spawn } from 'child_process';
 
-// import { prisma } from './database';
+import { prisma } from '@server/db/client';
 
-function getDirectories(source: string) {
+async function getDirectories(source: string) {
   return fs
     .readdirSync(source)
     .map(file => path.join(source, file))
@@ -31,13 +31,12 @@ async function storeClips(id: string) {
     await fs.mkdirSync(clipLocation);
     await fse.copy(clipDir, clipLocation);
 
-    // TODO: Submit new clip documents
-    // await prisma.clip.create({
-    //   data: {
-    //     footageId: id,
-    //     uuid,
-    //   },
-    // });
+    await prisma.clip.create({
+      data: {
+        footageId: id,
+        uuid,
+      },
+    });
   }
 }
 
@@ -57,15 +56,14 @@ export function parseClips(uuid: string, video: string): void {
       fs.rmSync('clips', { recursive: true, force: true });
       fs.rmSync(video, { force: true });
 
-      // TODO: Submit update to cockroach DB
-      // await prisma.footage.update({
-      //   where: {
-      //     id: uuid,
-      //   },
-      //   data: {
-      //     isParsed: true,
-      //   },
-      // });
+      await prisma.gameplay.update({
+        where: {
+          id: uuid,
+        },
+        data: {
+          isParsed: true,
+        },
+      });
     }
   });
 }

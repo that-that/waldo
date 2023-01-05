@@ -1,4 +1,4 @@
-import {TRPCError} from '@trpc/server';
+import { TRPCError } from '@trpc/server';
 import * as ytdl from 'ytdl-core';
 import * as cuid from "cuid";
 import * as fs from "fs";
@@ -12,7 +12,7 @@ import { z } from 'zod';
 import { router, protectedProcedure } from '../trpc';
 import { SegmentSchema } from '@utils/zod/segment';
 import { hasPerms, Perms } from '@server/utils/hasPerms';
-import {parseClips} from "@server/utils/clips";
+import { parseClips } from "@server/utils/clips";
 
 export const gameplayRouter = router({
   get: protectedProcedure
@@ -140,12 +140,12 @@ export const gameplayRouter = router({
 
       // TODO: Update to download specific format from footage details.
       // Download video and save as a local MP4 to be used for processing.
-      // const footageId = cuid();
-      // await ytdl(input.youtubeUrl).pipe(fs.createWriteStream(`${footageId}.mp4`));
+      const footageId = cuid();
+      await ytdl(input.youtubeUrl).pipe(fs.createWriteStream(`${footageId}.mp4`));
 
       // TODO: Create functionality to queue parsing and return clips to DB,
       // or implement endpoint to parse clips and return archive(?)
-      // parseClips(footageId, `${footageId}.mp4`);
+      parseClips(footageId, `${footageId}.mp4`);
 
       if (!defaultFormat && !lowFormat)
         throw new TRPCError({
